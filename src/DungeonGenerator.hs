@@ -44,18 +44,32 @@ data WorldConfig = WorldConfig {
     totalGenerations :: Int
 }
 
+-- Utilities
+
+roomsColliding :: Room -> Room -> Bool
+roomsColliding roomA roomB =
+   (fst (roomPos roomA) < fst (roomPos roomB) + fst (roomBounds roomB)) &&
+   (fst (roomPos roomA) + fst (roomBounds roomA) > fst (roomPos roomB)) &&
+   (snd (roomPos roomA) < snd (roomPos roomB) + snd (roomBounds roomB)) &&
+   (snd (roomPos roomA) + snd (roomBounds roomA) > snd (roomPos roomB))
+
+-- Actual logic
+
 addConnector :: ConnectorSettings -> Room -> Room
 addConnector (ConnectorSettings dir offset roffset len) room = room {connectors = ConnectorNode room dir offset roffset len : connectors room}
 
 addConnectors :: [ConnectorSettings] -> Room -> Room
 addConnectors settings room = foldr addConnector room settings
 
+roomCollidingPlural :: Room -> [Room] -> Bool
+roomCollidingPlural room = foldr ((&&) . roomsColliding room) True
+
 roomFromRoomSettings :: RoomSettings -> Room
 roomFromRoomSettings (RoomSettings connect bnds sGen True) = Room {roomPos = getRoomSpawnPos connect, roomBounds = bnds, connectors=[], generation=sGen}
 roomFromRoomSettings (RoomSettings _ _ _ False) = error "Cannot create false room settings"
 
 addRoom :: [Room] -> RoomSettings -> [Room]
-addRoom rooms roomS = if willSpawn roomS then roomFromRoomSettings roomS : rooms else rooms 
+addRoom rooms roomS = if willSpawn roomS && not (roomCollidingPlural (roomFromRoomSettings roomS) rooms) then roomFromRoomSettings roomS : rooms else rooms 
 
 getRoomSpawnPos :: ConnectorNode -> (Int, Int)
 getRoomSpawnPos (ConnectorNode room dir offset roffset length)
@@ -75,6 +89,7 @@ getRandom min max = do
     t <- getCurrentTime
     let time = fromIntegral $ diffTimeToPicoseconds $ utctDayTime t
     return ((((time * 2189104) `div` 2135902) `mod` max) + min)
+
 
 -- Drawing
 drawRoom :: Room -> IO ()
