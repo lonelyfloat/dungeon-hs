@@ -97,20 +97,17 @@ getRandom min max = do
     let time = fromIntegral $ diffTimeToPicoseconds $ utctDayTime t
     return ((((time * 2189104) `div` 2135902) `mod` max) + min)
 
-blankGenerationData :: GenerationData 
-blankGenerationData = GenerationData [] []
-
 getRandGeneration :: WorldConfig -> IO GenerationData
 getRandGeneration config = error "Random room family not implemented yet."
 
-generateRooms :: WorldConfig -> IO [Room] 
-generateRooms config = generateRooms' config (totalGenerations config) blankGenerationData [] 
+generateRooms :: WorldConfig -> Room -> IO [Room] 
+generateRooms config initialRoom = generateRooms' config (totalGenerations config) [initialRoom] 
 
-generateRooms' :: WorldConfig -> Int -> GenerationData -> [Room] -> IO [Room]
-generateRooms' config currGen genData rooms = do
+generateRooms' :: WorldConfig -> Int -> [Room] -> IO [Room]
+generateRooms' config currGen rooms = do
         rand <- getRandGeneration config
         let newGen = addGeneration rooms rand currGen
-        if currGen /= 0 then generateRooms' config (currGen - 1) rand newGen else return newGen
+        if currGen /= 0 then generateRooms' config (currGen - 1) newGen else return newGen
 
 -- Drawing
 drawRoom :: Room -> IO ()
