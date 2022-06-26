@@ -79,8 +79,10 @@ getRoomSpawnPos (ConnectorNode room dir offset roffset length)
     | dir == East  = (fst (roomPos room) + fst (roomBounds room) + length, snd (roomPos room) + offset - roffset)
     | otherwise = error "Unreachable"
 
+-- Takes in all rooms, returns all rooms with new generation applied.
 addGeneration :: [Room] -> [[ConnectorSettings]] -> [RoomSettings] -> Int -> [Room]
-addGeneration rooms settings roomSettings currentGeneration = zipWith addConnectors settings (foldl addRoom rooms roomSettings)
+addGeneration rooms settings roomSettings currentGeneration = zipWith addConnectors settings (foldl addRoom (filter ((currentGeneration-1==) . generation) rooms) roomSettings) ++
+    filter ((currentGeneration-1/=) . generation) rooms 
 
 -- Random(Generation) Stuff
 
