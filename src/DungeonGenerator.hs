@@ -84,7 +84,7 @@ addGeneration :: [Room] -> [[ConnectorSettings]] -> [RoomSettings] -> Int -> [Ro
 addGeneration rooms settings roomSettings currentGeneration = zipWith addConnectors settings (foldl addRoom (filter ((currentGeneration-1==) . generation) rooms) roomSettings) ++
     filter ((currentGeneration-1/=) . generation) rooms 
 
--- Randomsgit config --global user.email you@example.com
+-- THIS COMMENT STOP
 getRandom :: Int -> Int -> IO Int
 getRandom min max = do
     t <- getCurrentTime
