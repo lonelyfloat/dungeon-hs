@@ -44,6 +44,11 @@ data WorldConfig = WorldConfig {
     totalGenerations :: Int
 }
 
+data GenerationData = GenerationData {
+    generationConnectors :: [[ConnectorSettings]],
+    generationRooms :: [RoomSettings]
+}
+
 -- Utilities
 
 roomsColliding :: Room -> Room -> Bool
@@ -80,17 +85,32 @@ getRoomSpawnPos (ConnectorNode room dir offset roffset length)
     | otherwise = error "Unreachable"
 
 -- Takes in all rooms, returns all rooms with new generation applied.
-addGeneration :: [Room] -> [[ConnectorSettings]] -> [RoomSettings] -> Int -> [Room]
-addGeneration rooms settings roomSettings currentGeneration = zipWith addConnectors settings (foldl addRoom (filter ((currentGeneration-1==) . generation) rooms) roomSettings) ++
+addGeneration :: [Room] -> GenerationData -> Int -> [Room]
+addGeneration rooms (GenerationData settings roomSettings) currentGeneration = zipWith addConnectors settings (foldl addRoom (filter ((currentGeneration-1==) . generation) rooms) roomSettings) ++
     filter ((currentGeneration-1/=) . generation) rooms 
 
--- THIS COMMENT STOP
+-- THIS COMMENT STOP - RANDGEN
+
 getRandom :: Int -> Int -> IO Int
 getRandom min max = do
     t <- getCurrentTime
     let time = fromIntegral $ diffTimeToPicoseconds $ utctDayTime t
     return ((((time * 2189104) `div` 2135902) `mod` max) + min)
 
+blankGenerationData :: GenerationData 
+blankGenerationData = GenerationData [] []
+
+getRandGeneration :: WorldConfig -> IO GenerationData
+getRandGeneration config = error "Random room family not implemented yet."
+
+generateRooms :: WorldConfig -> IO [Room] 
+generateRooms config = generateRooms' config (totalGenerations config) blankGenerationData [] 
+
+generateRooms' :: WorldConfig -> Int -> GenerationData -> [Room] -> IO [Room]
+generateRooms' config currGen genData rooms = do
+        rand <- getRandGeneration config
+        let newGen = addGeneration rooms rand currGen
+        if currGen /= 0 then generateRooms' config (currGen - 1) rand newGen else return newGen
 
 -- Drawing
 drawRoom :: Room -> IO ()
