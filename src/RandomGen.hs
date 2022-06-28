@@ -1,6 +1,7 @@
 module RandomGen where
 
 import Generator
+import Types
 import Data.Time.Clock
 
 getRandom :: Int -> Int -> IO Int
@@ -41,6 +42,7 @@ getRandGeneration config generation nodes = do
     let ffs = (\x -> mapM fs (replicate x () ) )
     cnts <- sequence $ genMult 0 4 getRandom (length roomS)
     connectorS <- mapM ffs cnts
+    -- and pack everything into a GenerationData struct
     return (GenerationData{generationRooms=roomS, generationConnectors=connectorS})
 
 generateRooms :: WorldConfig -> Room -> IO [Room] 
