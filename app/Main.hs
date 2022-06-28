@@ -1,6 +1,6 @@
 module Main where
 
-import DungeonGenerator
+import Generator
 
 main :: IO ()
 main = putStrLn "Hello World"
